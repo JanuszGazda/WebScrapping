@@ -24,7 +24,7 @@ public class Main {
     public static void main(String[] args) {
 
         //Strona z której pobierane będą produkty
-        String url = "https://www.ceneo.pl/Filmy_Blu-ray/Gatunek:Psychologiczne.htm";
+        String url = "https://www.ceneo.pl/Filmy_Blu-ray/Gatunek:Melodramaty.htm";
 
         ArrayList<Produkt> lista = new ArrayList<>();
         Elements strony;
@@ -94,7 +94,7 @@ public class Main {
 
             //Sprawdzanie czy strona posiada link do kolejnych stron
             strony = doc.select("div.pagination");
-            while(strony.size()!=0) {
+            if(strony.size()!=0) {
                 Element link = strony.select("span").last();
                 String koniec = link.attr("class");
 
@@ -143,7 +143,7 @@ public class Main {
             }
             reader.close();
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, e.getMessage(), "Error Message", JOptionPane.OK_OPTION);
+            JOptionPane.showMessageDialog(null, e.getMessage()+" nie odpowiada", "Error Message", JOptionPane.OK_OPTION);
             e.printStackTrace();
 
         }
