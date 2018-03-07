@@ -1,6 +1,4 @@
-/*
-    Klasa reprezentująca obiekt jednego produktu
- */
+
 public class Produkt {
 
     String nazwa;
