@@ -23,8 +23,8 @@ public interface ICeneoService {
     static ArrayList<Produkt> stringToObject(String url) {
 
         ArrayList<Produkt> lista = new ArrayList<>();
-        Elements strony = null;
-        Elements produkty = null;
+        Elements strony;
+        Elements produkty;
         Boolean wyjscie = false;
 
         //pętla do-while jest odpowiedzialna za iteracje po kolejnych stronach
@@ -78,7 +78,7 @@ public interface ICeneoService {
             //nazwa
             if (line.contains("list-prod-name")) {
                 nazwa = scanner.nextLine().substring(4);
-                if(info==true){System.out.println("Produkt: " + nazwa);}
+                if(info){System.out.println("Produkt: " + nazwa);}
             }//zdjęcie
             else if (line.contains("data-src=")) {
                 indeksURLbegin = line.indexOf("data-src=");
