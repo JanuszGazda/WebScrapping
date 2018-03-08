@@ -3,6 +3,7 @@ import com.thoughtworks.xstream.io.xml.DomDriver;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 public interface IxmlService {
 
@@ -17,12 +18,10 @@ public interface IxmlService {
 
     static String objectToXMLString(ArrayList<Produkt> lista) {
         XStream xstream = new XStream(new DomDriver());
-        String xml = "";
-        for (int i = 0; i <= lista.size() - 1; i++) {
-            xml += xstream.toXML(lista.get(i));
-            xml += '\n';
-        }
-        return xml;
+
+        return lista.parallelStream()
+                .map(e -> xstream.toXML(e))
+                .collect(Collectors.joining(""));
     }
 
 }

@@ -33,56 +33,9 @@ public interface ICeneoService {
             Document doc = Jsoup.parse(readURL(url));
             produkty = doc.select("div[data-pid]");
 
-            //pętla for jest odpowiedzialna za iteracje po kolejnych produktach na stronie
-            for (Element p : produkty) {
+            iterateProducts(produkty, lista);
 
-                Produkt pr = new Produkt();
-
-                int indeksURLbegin, indeksURLend, cenaBegin, cenaEnd, groszeBegin, groszeEnd;
-                String nazwa = null;
-                String cena = null;
-                String urlZdjecia = null;
-
-                //Wyszukanie cech produktu
-                Scanner scanner = new Scanner(p.toString());
-                while (scanner.hasNextLine()) {
-                    String line = scanner.nextLine();
-                    //nazwa
-                    if (line.contains("list-prod-name")) {
-                        nazwa = scanner.nextLine().substring(4);
-                        System.out.println("Produkt: " + nazwa);
-                    }//zdjęcie
-                    else if (line.contains("data-src=")) {
-                        indeksURLbegin = line.indexOf("data-src=");
-                        indeksURLend = line.indexOf("data-preloader");
-                        urlZdjecia = line.substring(indeksURLbegin + 10, indeksURLend - 2);
-                    }//cena
-                    else if (line.contains("price-int")) {
-                        cenaBegin = line.indexOf("price-int") + 11;
-                        cenaEnd = line.indexOf("</span><span class=\"price-fraction\"");
-                        groszeBegin = line.indexOf("price-fraction") + 16;
-                        groszeEnd = groszeBegin + 3;
-                        cena = line.substring(cenaBegin, cenaEnd) + line.substring(groszeBegin, groszeEnd);
-                    }
-                }
-
-                //warunek if zabezpiecza przed wstawieniem proponowanych pozycji do listy
-                //takie pozycje posiadają nazwę o wartości null
-                if (nazwa != null) {
-                    pr.setNazwa(nazwa);
-                    try {
-                        pr.setZdjecie(encodeToString(new URL("https:" + urlZdjecia)));
-                    } catch (MalformedURLException e) {
-                        e.printStackTrace();
-                    }
-                    pr.setCena(cena);
-                    lista.add(pr);
-                }
-                scanner.close();
-            }
-
-
-            //Sprawdzanie czy strona posiada link do kolejnych stron
+            //Sprawdzenie czy strona posiada link do kolejnych stron
             strony = doc.select("div.pagination");
             if (strony.size() != 0) {
                 Element link = strony.select("span").last();
@@ -100,7 +53,58 @@ public interface ICeneoService {
         return lista;
     }
 
-    //metoda przeznaczona do zapisu strony www do Stringa
+    static void iterateProducts(Elements produkty, ArrayList<Produkt> lista) {
+
+        //iteracja po kolejnych produktach na stronie
+        produkty.stream()
+                .filter(p -> extractInfo(p, false).getNazwa()!=null)
+                .forEach(p -> lista.add(extractInfo(p, true)));
+    }
+
+
+    static Produkt extractInfo(Element p, boolean info){
+
+        Produkt pr = new Produkt();
+
+        String nazwa = null;
+        String cena = null;
+        String urlZdjecia = null;
+        int indeksURLbegin, indeksURLend, cenaBegin, cenaEnd, groszeBegin, groszeEnd;
+
+        //Wyszukanie cech produktu
+        Scanner scanner = new Scanner(p.toString());
+        while (scanner.hasNextLine()) {
+            String line = scanner.nextLine();
+            //nazwa
+            if (line.contains("list-prod-name")) {
+                nazwa = scanner.nextLine().substring(4);
+                if(info==true){System.out.println("Produkt: " + nazwa);}
+            }//zdjęcie
+            else if (line.contains("data-src=")) {
+                indeksURLbegin = line.indexOf("data-src=");
+                indeksURLend = line.indexOf("data-preloader");
+                urlZdjecia = line.substring(indeksURLbegin + 10, indeksURLend - 2);
+            }//cena
+            else if (line.contains("price-int")) {
+                cenaBegin = line.indexOf("price-int") + 11;
+                cenaEnd = line.indexOf("</span><span class=\"price-fraction\"");
+                groszeBegin = line.indexOf("price-fraction") + 16;
+                groszeEnd = groszeBegin + 3;
+                cena = line.substring(cenaBegin, cenaEnd) + line.substring(groszeBegin, groszeEnd);
+            }
+        }
+        pr.setNazwa(nazwa);
+        pr.setCena(cena);
+        try {
+            pr.setZdjecie(encodeToString(new URL("https:" + urlZdjecia)));
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        scanner.close();
+        return pr;
+    }
+
+    //zapis strony www do Stringa
     static String readURL(String url) {
 
         String fileContents = "";
